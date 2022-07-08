@@ -1,0 +1,4 @@
+homeassistant-api==4.0.0
+aioesphomeapi==10.11.0
+python-dotenv==0.20.0
+black==22.6.0
