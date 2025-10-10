@@ -56,6 +56,8 @@ The web interface will be available at **http://localhost:5000**
 
 ### Web Interface
 
+<img width="937" height="541" alt="Web Interface" src="https://github.com/user-attachments/assets/1749407c-6f88-4fdb-ba08-135c08a39b0e" />
+
 Open http://localhost:5000 in your browser to:
 
 - **View live data**: Current vehicle speed, fan speed, rate compensation, and ESPHome connection status
