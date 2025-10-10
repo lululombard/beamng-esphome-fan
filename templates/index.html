@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>BeamNG Fan Controller</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #1a1a1a;
+            min-height: 100vh;
+            padding: 20px;
+            color: #ffffff;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            padding: 30px;
+            margin-bottom: 30px;
+            border-bottom: 3px solid #FF6B00;
+        }
+
+        h1 {
+            color: #FF6B00;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+
+        .subtitle {
+            color: #aaa;
+            font-size: 1.1em;
+        }
+
+        .live-data {
+            background: #2a2a2a;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            margin-bottom: 20px;
+            border: 1px solid #333;
+        }
+
+        .system-status {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 25px;
+            padding: 20px;
+            background: #1a1a1a;
+            border-radius: 10px;
+            border: 2px solid #FF6B00;
+        }
+
+        .status-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .status-indicator {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .status-enabled {
+            background-color: #FF6B00;
+            box-shadow: 0 0 15px rgba(255, 107, 0, 0.8);
+        }
+
+        .status-disabled {
+            background-color: #666;
+            box-shadow: 0 0 10px rgba(102, 102, 102, 0.6);
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+
+            50% {
+                opacity: 0.7;
+                transform: scale(0.95);
+            }
+        }
+
+        .status-text {
+            font-size: 1.3em;
+            font-weight: 600;
+            color: #ffffff;
+        }
+
+        /* Toggle Switch Styling */
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 70px;
+            height: 36px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #555;
+            transition: .4s;
+            border-radius: 36px;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 28px;
+            width: 28px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        input:checked+.toggle-slider {
+            background-color: #FF6B00;
+        }
+
+        input:checked+.toggle-slider:before {
+            transform: translateX(34px);
+        }
+
+        .toggle-slider:active:before {
+            width: 36px;
+        }
+
+        .data-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+        }
+
+        .data-item {
+            text-align: center;
+            padding: 25px;
+            background: #333;
+            border-radius: 12px;
+            color: white;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            transition: all 0.2s;
+            border: 2px solid #444;
+        }
+
+        .data-item:hover {
+            transform: translateY(-2px);
+            border-color: #FF6B00;
+        }
+
+        .data-label {
+            font-size: 0.95em;
+            color: #FF6B00;
+            margin-bottom: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .data-value {
+            font-size: 3.5em;
+            font-weight: bold;
+            line-height: 1;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .data-unit {
+            font-size: 0.35em;
+            opacity: 0.9;
+            margin-left: 5px;
+        }
+
+        .settings {
+            background: #2a2a2a;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            margin-bottom: 20px;
+            border: 1px solid #333;
+        }
+
+        h2 {
+            color: #FF6B00;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+
+        .setting {
+            margin: 20px 0;
+            padding: 18px;
+            background: #1a1a1a;
+            border-radius: 8px;
+            border: 1px solid #333;
+            transition: all 0.3s;
+        }
+
+        .setting:hover {
+            background: #222;
+            border-color: #FF6B00;
+        }
+
+        label {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            font-weight: 600;
+            color: #ddd;
+            font-size: 0.95em;
+        }
+
+        .label-text {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .value-display {
+            font-size: 1.1em;
+            color: #FF6B00;
+            font-weight: 700;
+            min-width: 80px;
+            text-align: right;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #444;
+            border-radius: 6px;
+            font-size: 16px;
+            transition: all 0.3s;
+            font-family: inherit;
+            background: #1a1a1a;
+            color: #fff;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #FF6B00;
+            box-shadow: 0 0 0 3px rgba(255, 107, 0, 0.2);
+        }
+
+        /* Slider Styling */
+        input[type="range"] {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100%;
+            height: 8px;
+            border-radius: 5px;
+            background: #444;
+            outline: none;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        input[type="range"]:hover {
+            height: 10px;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: #FF6B00;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(255, 107, 0, 0.5);
+            transition: all 0.2s;
+        }
+
+        input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+            box-shadow: 0 3px 12px rgba(255, 107, 0, 0.8);
+        }
+
+        input[type="range"]::-webkit-slider-thumb:active {
+            transform: scale(1.1);
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: #FF6B00;
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 2px 8px rgba(255, 107, 0, 0.5);
+            transition: all 0.2s;
+        }
+
+        input[type="range"]::-moz-range-thumb:hover {
+            transform: scale(1.2);
+            box-shadow: 0 3px 12px rgba(255, 107, 0, 0.8);
+        }
+
+        input[type="range"]::-moz-range-track {
+            width: 100%;
+            height: 8px;
+            cursor: pointer;
+            background: #444;
+            border-radius: 5px;
+        }
+
+        .description {
+            font-size: 0.85em;
+            color: #999;
+            margin-top: 6px;
+            line-height: 1.4;
+        }
+
+        button {
+            padding: 14px 28px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s;
+            width: 100%;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        button:active {
+            transform: translateY(1px);
+        }
+
+        .btn-primary {
+            background: #FF6B00;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #ff8533;
+            box-shadow: 0 4px 15px rgba(255, 107, 0, 0.5);
+            transform: translateY(-2px);
+        }
+
+        .message {
+            padding: 14px;
+            margin-top: 15px;
+            border-radius: 8px;
+            display: none;
+            animation: slideIn 0.3s;
+            font-weight: 500;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .success-msg {
+            background: #1a4d2e;
+            color: #4caf50;
+            border: 2px solid #4caf50;
+        }
+
+        .error-msg {
+            background: #4d1a1a;
+            color: #f44336;
+            border: 2px solid #f44336;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>BeamNG Fan Controller</h1>
+            <p class="subtitle">Real-time fan control based on vehicle speed</p>
+        </div>
+
+        <div class="live-data">
+            <div class="system-status">
+                <div class="status-left">
+                    <span class="status-indicator" id="statusIndicator"></span>
+                    <span class="status-text" id="statusText">Fan Control: Off</span>
+                </div>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="systemToggle" onchange="toggleSystem()">
+                    <span class="toggle-slider"></span>
+                </label>
+            </div>
+
+            <div class="system-status" style="margin-bottom: 25px;">
+                <div class="status-left">
+                    <span class="status-text">ESPHome Status:</span>
+                </div>
+                <div style="font-size: 1.2em; font-weight: 600;" id="connectionValue">
+                    <span class="connection-text">Checking...</span>
+                </div>
+            </div>
+
+            <div class="data-grid">
+                <div class="data-item">
+                    <div class="data-label">Vehicle Speed</div>
+                    <div class="data-value" id="speedValue">--<span class="data-unit">km/h</span></div>
+                </div>
+                <div class="data-item">
+                    <div class="data-label">Fan Speed</div>
+                    <div class="data-value" id="fanValue">--<span class="data-unit">%</span></div>
+                </div>
+                <div class="data-item" id="compensationStatus">
+                    <div class="data-label">Rate Compensation</div>
+                    <div class="data-value" style="font-size: 2em;" id="compensationValue">
+                        <span>0</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="settings">
+            <h2>Algorithm Configuration</h2>
+            <form id="algoForm">
+                <div class="setting">
+                    <label for="min_speed_kmh">
+                        <span class="label-text">Minimum Vehicle Speed</span>
+                        <span class="value-display"><span id="min_speed_value">{{ config.MIN_SPEED_KMH }}</span>
+                            km/h</span>
+                    </label>
+                    <input type="range" id="min_speed_kmh" name="MIN_SPEED_KMH" value="{{ config.MIN_SPEED_KMH }}"
+                        min="0" max="500" step="5" oninput="updateValue('min_speed_value', this.value)">
+                    <div class="description">Vehicle speed that maps to 0% fan speed</div>
+                </div>
+
+                <div class="setting">
+                    <label for="max_speed_kmh">
+                        <span class="label-text">Maximum Vehicle Speed</span>
+                        <span class="value-display"><span id="max_speed_value">{{ config.MAX_SPEED_KMH }}</span>
+                            km/h</span>
+                    </label>
+                    <input type="range" id="max_speed_kmh" name="MAX_SPEED_KMH" value="{{ config.MAX_SPEED_KMH }}"
+                        min="50" max="500" step="5" oninput="updateValue('max_speed_value', this.value)">
+                    <div class="description">Vehicle speed that maps to 100% fan speed</div>
+                </div>
+
+                <div class="setting">
+                    <label for="min_fan_speed">
+                        <span class="label-text">Minimum Fan Speed</span>
+                        <span class="value-display"><span id="min_fan_value">{{ config.MIN_FAN_SPEED }}</span>%</span>
+                    </label>
+                    <input type="range" id="min_fan_speed" name="MIN_FAN_SPEED" value="{{ config.MIN_FAN_SPEED }}"
+                        min="0" max="100" step="1" oninput="updateValue('min_fan_value', this.value)">
+                    <div class="description">0 = off when stopped, 1+ = always on at minimum level</div>
+                </div>
+
+                <div class="setting">
+                    <label for="max_fan_speed">
+                        <span class="label-text">Maximum Fan Speed</span>
+                        <span class="value-display"><span id="max_fan_value">{{ config.MAX_FAN_SPEED }}</span>%</span>
+                    </label>
+                    <input type="range" id="max_fan_speed" name="MAX_FAN_SPEED" value="{{ config.MAX_FAN_SPEED }}"
+                        min="1" max="100" step="1" oninput="updateValue('max_fan_value', this.value)">
+                    <div class="description">Maximum fan speed percentage cap</div>
+                </div>
+
+                <div class="setting">
+                    <label for="rate_compensation">
+                        <span class="label-text">Rate Compensation</span>
+                        <span class="value-display"><span id="rate_compensation_value">{{ config.RATE_COMPENSATION
+                                }}</span></span>
+                    </label>
+                    <input type="range" id="rate_compensation" name="RATE_COMPENSATION"
+                        value="{{ config.RATE_COMPENSATION }}" min="0" max="100" step="5"
+                        oninput="updateValue('rate_compensation_value', this.value)">
+                    <div class="description">How aggressively to respond to speed changes (0=off, 20-40=balanced,
+                        60+=aggressive)</div>
+                </div>
+
+                <div class="setting">
+                    <label for="rate_smoothing">
+                        <span class="label-text">Rate Smoothing</span>
+                        <span class="value-display"><span id="rate_smoothing_value">{{ config.RATE_SMOOTHING }}</span>
+                            samples</span>
+                    </label>
+                    <input type="range" id="rate_smoothing" name="RATE_SMOOTHING" value="{{ config.RATE_SMOOTHING }}"
+                        min="1" max="10" step="1" oninput="updateValue('rate_smoothing_value', this.value)">
+                    <div class="description">Speed samples to average (1=instant but jumpy, 3=balanced, 10=very smooth)
+                    </div>
+                </div>
+
+                <button type="button" class="btn-primary" onclick="saveAlgorithmSettings()">Save & Apply</button>
+            </form>
+
+            <div id="algoMessage" class="message"></div>
+        </div>
+
+        <div class="settings">
+            <h2>ESPHome Connection</h2>
+            <form id="esphomeForm">
+                <div class="setting">
+                    <label for="esp_ip">
+                        <span class="label-text">ESPHome IP Address</span>
+                    </label>
+                    <input type="text" id="esp_ip" name="ESP_IP" value="{{ config.ESP_IP }}"
+                        placeholder="192.168.1.100">
+                    <div class="description">IP address of your ESPHome device</div>
+                </div>
+
+                <div class="setting">
+                    <label for="fan_entity">
+                        <span class="label-text">Fan Entity ID</span>
+                    </label>
+                    <input type="text" id="fan_entity" name="FAN_ENTITY" value="{{ config.FAN_ENTITY }}"
+                        placeholder="fan_name">
+                    <div class="description">ESPHome fan entity object_id</div>
+                </div>
+
+                <div class="setting">
+                    <label for="cooldown_ms">
+                        <span class="label-text">Command Cooldown</span>
+                        <span class="value-display"><span id="cooldown_value">{{ config.COOLDOWN_MS }}</span> ms</span>
+                    </label>
+                    <input type="range" id="cooldown_ms" name="COOLDOWN_MS" value="{{ config.COOLDOWN_MS }}" min="50"
+                        max="1000" step="50" oninput="updateValue('cooldown_value', this.value)">
+                    <div class="description">Delay between fan speed updates (prevents device overload)</div>
+                </div>
+
+                <button type="button" class="btn-primary" onclick="saveESPHomeSettings()">Save & Reconnect</button>
+            </form>
+
+            <div id="esphomeMessage" class="message"></div>
+        </div>
+    </div>
+
+    <script>
+        // Update slider value display
+        function updateValue(elementId, value) {
+            document.getElementById(elementId).textContent = value;
+        }
+
+        // Live data updates using Server-Sent Events
+        const eventSource = new EventSource('/api/live');
+
+        eventSource.onmessage = function (event) {
+            const data = JSON.parse(event.data);
+            document.getElementById('speedValue').innerHTML =
+                data.speed_kmh.toFixed(1) + '<span class="data-unit">km/h</span>';
+            document.getElementById('fanValue').innerHTML =
+                data.fan_speed + '<span class="data-unit">%</span>';
+
+            // Update rate compensation with dynamic coloring
+            const compensation = data.rate_compensation || 0;
+            const compensationStatus = document.getElementById('compensationStatus');
+            const compensationValue = document.getElementById('compensationValue');
+
+            // Calculate color based on compensation value
+            // Positive = green (accelerating), Negative = red (braking)
+            let bgColor;
+            let borderColor;
+            if (compensation > 0) {
+                // Green for acceleration
+                const intensity = Math.min(Math.abs(compensation) * 4, 100);
+                const greenValue = Math.floor(100 + (155 * intensity / 100));
+                bgColor = `rgb(20, ${greenValue}, 40)`;
+                borderColor = `rgb(40, ${Math.min(greenValue + 50, 255)}, 60)`;
+            } else if (compensation < 0) {
+                // Red for braking
+                const intensity = Math.min(Math.abs(compensation) * 4, 100);
+                const redValue = Math.floor(150 + (105 * intensity / 100));
+                bgColor = `rgb(${redValue}, 40, 40)`;
+                borderColor = `rgb(${Math.min(redValue + 50, 255)}, 60, 60)`;
+            } else {
+                // Neutral when no compensation
+                bgColor = '#333';
+                borderColor = '#444';
+            }
+
+            compensationStatus.style.background = bgColor;
+            compensationStatus.style.borderColor = borderColor;
+
+            // Display with sign
+            const sign = compensation > 0 ? '+' : '';
+            compensationValue.innerHTML = `<span>${sign}${Math.round(compensation)}</span>`;
+
+            // Update ESPHome connection status
+            const connectionValue = document.getElementById('connectionValue');
+            if (data.connected) {
+                connectionValue.innerHTML = '<span class="connection-text" style="color: #4caf50;">Connected</span>';
+            } else {
+                connectionValue.innerHTML = '<span class="connection-text" style="color: #f44336;">Disconnected</span>';
+            }
+
+            // Update status indicator and toggle
+            const indicator = document.getElementById('statusIndicator');
+            const statusText = document.getElementById('statusText');
+            const toggle = document.getElementById('systemToggle');
+
+            if (data.enabled) {
+                indicator.className = 'status-indicator status-enabled';
+                statusText.textContent = 'Fan Control: On';
+                toggle.checked = true;
+            } else {
+                indicator.className = 'status-indicator status-disabled';
+                statusText.textContent = 'Fan Control: Off';
+                toggle.checked = false;
+            }
+        };
+
+        eventSource.onerror = function () {
+            console.error('Lost connection to server');
+        };
+
+        // Toggle system enabled/disabled
+        async function toggleSystem() {
+            try {
+                const response = await fetch('/api/toggle', { method: 'POST' });
+                const result = await response.json();
+            } catch (error) {
+                console.error('Error toggling system:', error);
+            }
+        }
+
+        // Save algorithm settings only
+        async function saveAlgorithmSettings() {
+            const formData = new FormData(document.getElementById('algoForm'));
+            const data = {};
+            formData.forEach((value, key) => {
+                // All algorithm form fields are numeric
+                data[key] = parseInt(value);
+            });
+
+            try {
+                showMessage('algoMessage', 'Saving settings...', 'success-msg');
+
+                const saveResponse = await fetch('/api/config', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                const saveResult = await saveResponse.json();
+
+                if (saveResult.success) {
+                    showMessage('algoMessage', 'Settings saved and applied!', 'success-msg');
+                } else {
+                    showMessage('algoMessage', 'Error: ' + saveResult.error, 'error-msg');
+                }
+            } catch (error) {
+                showMessage('algoMessage', 'Error: ' + error.message, 'error-msg');
+            }
+        }
+
+        // Save ESPHome settings and reconnect
+        async function saveESPHomeSettings() {
+            const formData = new FormData(document.getElementById('esphomeForm'));
+            const data = {};
+            formData.forEach((value, key) => {
+                // Convert COOLDOWN_MS to integer, keep others as strings
+                data[key] = key === 'COOLDOWN_MS' ? parseInt(value) : value;
+            });
+
+            try {
+                showMessage('esphomeMessage', 'Saving settings...', 'success-msg');
+
+                const saveResponse = await fetch('/api/config', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                const saveResult = await saveResponse.json();
+
+                if (!saveResult.success) {
+                    showMessage('esphomeMessage', 'Error: ' + saveResult.error, 'error-msg');
+                    return;
+                }
+
+                showMessage('esphomeMessage', 'Reconnecting to ESPHome...', 'success-msg');
+
+                const reconnectResponse = await fetch('/api/reconnect', { method: 'POST' });
+                const reconnectResult = await reconnectResponse.json();
+
+                if (reconnectResult.success) {
+                    showMessage('esphomeMessage', 'Settings saved and connected!', 'success-msg');
+                } else {
+                    showMessage('esphomeMessage', 'Settings saved but connection failed. Check IP and entity.', 'error-msg');
+                }
+            } catch (error) {
+                showMessage('esphomeMessage', 'Error: ' + error.message, 'error-msg');
+            }
+        }
+
+        // Show message helper
+        function showMessage(elementId, text, className) {
+            const messageEl = document.getElementById(elementId);
+            messageEl.className = 'message ' + className;
+            messageEl.textContent = text;
+            messageEl.style.display = 'block';
+            setTimeout(() => {
+                messageEl.style.display = 'none';
+            }, 3000);
+        }
+    </script>
+</body>
+
+</html>
