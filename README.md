@@ -2,6 +2,8 @@
 
 Control a physical fan with your vehicle speed in BeamNG.drive! This tool receives telemetry data from BeamNG via the OutGauge protocol and controls an ESPHome fan in real-time, creating an immersive driving experience with wind in your face.
 
+<img width="949" height="525" alt="ESPHome Fan Controller Web Interface" src="https://github.com/user-attachments/assets/e3e7db16-9ae0-4a95-b29b-c66938a46b90" />
+
 ## Features
 
 - **Real-time fan control** based on vehicle speed
@@ -55,8 +57,6 @@ The web interface will be available at **http://localhost:5000**
 ## Usage
 
 ### Web Interface
-
-<img width="937" height="541" alt="Web Interface" src="https://github.com/user-attachments/assets/1749407c-6f88-4fdb-ba08-135c08a39b0e" />
 
 Open http://localhost:5000 in your browser to:
 
