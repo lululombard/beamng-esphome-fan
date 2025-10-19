@@ -17,6 +17,8 @@ class ESPHomeClient:
         self.api = None
         self.fan_entity = None
         self.lock = threading.Lock()
+        self.reconnect_attempts = 0
+        self.max_reconnect_attempts = 3
 
     async def connect(self):
         """
@@ -70,7 +72,10 @@ class ESPHomeClient:
             bool: True if connection successful, False otherwise
         """
         print(f"Connecting to ESPHome at {Config.ESP_IP}...")
-        return asyncio.run(self.connect())
+        success = asyncio.run(self.connect())
+        if success:
+            self.reconnect_attempts = 0  # Reset counter on successful connection
+        return success
 
     async def control_fan(self, fan_speed):
         """
@@ -81,8 +86,7 @@ class ESPHomeClient:
         """
         with self.lock:
             if self.api is None or self.fan_entity is None:
-                print("ESPHome not connected")
-                return
+                return  # Silently skip if not connected
 
             try:
                 # Send fan command: turn on if speed > 0, and set the speed level
@@ -91,17 +95,37 @@ class ESPHomeClient:
                     fan_speed > 0,
                     speed_level=fan_speed
                 )
+                self.reconnect_attempts = 0  # Reset on successful command
             except Exception as e:
-                print(f"Error controlling fan: {e}")
+                # Connection lost - mark as disconnected and trigger reconnection
+                print(f"[ERROR] ESPHome connection lost: {e}")
+                self.api = None
+                self.fan_entity = None
+                LiveData.set_connected(False)
+
+                # Attempt to reconnect if we haven't exceeded max attempts
+                if self.reconnect_attempts < self.max_reconnect_attempts:
+                    self.reconnect_attempts += 1
+                    print(f"[INFO] Attempting reconnection ({self.reconnect_attempts}/{self.max_reconnect_attempts})...")
 
     def update_fan_speed(self, fan_speed):
         """
         Wrapper function to run async ESPHome command from synchronous context.
+        Automatically attempts reconnection if the connection is lost.
 
         Args:
             fan_speed: Target fan speed percentage (0-100)
         """
         asyncio.run(self.control_fan(fan_speed))
+
+        # If we detected a connection failure, attempt to reconnect
+        if not self.is_connected() and self.reconnect_attempts > 0 and self.reconnect_attempts <= self.max_reconnect_attempts:
+            if self.reconnect():
+                print("[OK] Reconnected successfully")
+                # Retry the command after successful reconnection
+                asyncio.run(self.control_fan(fan_speed))
+            else:
+                print(f"[WARN] Reconnection failed ({self.reconnect_attempts}/{self.max_reconnect_attempts})")
 
     def is_connected(self):
         """Check if connected to ESPHome."""

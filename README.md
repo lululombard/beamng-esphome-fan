@@ -12,7 +12,7 @@ Control a physical fan with your vehicle speed in BeamNG.drive! This tool receiv
 - **Rate compensation** - derivative control for aggressive response to acceleration/braking
 - **Dynamic ESPHome connection** - configure IP and entity from the web UI
 - **Global on/off switch** - disable the system without stopping the script
-- **Auto-reconnect** - reconnect to ESPHome without restarting
+- **Automatic reconnection** - automatically reconnects when ESPHome connection is lost (up to 3 attempts)
 
 ## Requirements
 
@@ -133,6 +133,13 @@ beamng-esphome-fan/
 1. Check that port 5000 is not in use by another application
 2. Try accessing via your computer's IP instead of localhost
 3. Check console output for any Flask errors
+
+### ESPHome connection keeps dropping?
+The system automatically attempts to reconnect up to 3 times when the connection is lost:
+- Look for `[ERROR] ESPHome connection lost` messages in console
+- Check if your ESPHome device is stable (power, network)
+- If reconnection fails repeatedly, manually click "Save & Reconnect" in the web UI
+- After 3 failed attempts, manual reconnection is required
 
 ### Rate compensation behaving erratically?
 1. Increase **Rate Smoothing** to 5-10 for more stable calculations
