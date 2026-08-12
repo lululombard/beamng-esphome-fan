@@ -31,15 +31,25 @@ class ESPHomeClient:
             # Create API client with IP from configuration, port 6053, no password
             api = aioesphomeapi.APIClient(Config.ESP_IP, 6053, None)
             # Connect to the ESPHome device
-            await api.connect(login=True)
+            await api.connect(login=False)
+
+            # ESPHome >=2026 removed API passwords and the ConnectRequest login
+            # handshake, so only log in on older firmware
+            info = await api.device_info()
+            if int(info.esphome_version.split(".")[0]) >= 2026:
+                api._connection._is_authenticated = True
+            else:
+                await api._connection.login()
 
             # List all entities available on the device
             entities = await api.list_entities_services()
 
             # Search for the fan entity specified in configuration
+            # (ESPHome >=2026 no longer sends object_id, so derive it from the name)
             entity = None
             for ent in entities[0]:
-                if ent.object_id == Config.FAN_ENTITY:
+                object_id = ent.object_id or ent.name.lower().replace(" ", "_")
+                if object_id == Config.FAN_ENTITY:
                     entity = ent
                     break
 
